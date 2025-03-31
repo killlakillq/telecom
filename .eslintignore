@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+build
+.next
+.vscode
+.idea
+*.config.js
+*.config.ts 
