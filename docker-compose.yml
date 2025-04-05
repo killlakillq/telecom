@@ -1,14 +1,13 @@
-version: '3.8'
-
 services:
   asterisk:
+    container_name: asterisk
     build:
       context: ./asterisk
       dockerfile: Dockerfile
     ports:
-      - "5060:5060/udp"  # SIP
-      - "5060:5060/tcp"  # SIP
-      - "5038:5038"      # AMI
+      - '5060:5060/udp'
+      - '5060:5060/tcp'
+      - '5038:5038'
     volumes:
       - ./asterisk/config:/etc/asterisk
       - ./asterisk/logs:/var/log/asterisk
@@ -19,10 +18,11 @@ services:
       - telecom-network
 
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Management UI
+      - '5672:5672'
+      - '15672:15672'
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
@@ -32,22 +32,27 @@ services:
       - telecom-network
 
   postgres:
+    container_name: postgres
     image: timescale/timescaledb:latest-pg14
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./apps/api/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
       - telecom-network
 
-  event-processor:
+  events:
+    container_name: events
     build:
-      context: ./apps/event-processor
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/events/Dockerfile
+    ports:
+      - '3000:3000'
     depends_on:
       - asterisk
       - rabbitmq
@@ -56,35 +61,63 @@ services:
       - ASTERISK_AMI_PORT=5038
       - ASTERISK_AMI_USERNAME=${ASTERISK_AMI_USERNAME}
       - ASTERISK_AMI_PASSWORD=${ASTERISK_AMI_PASSWORD}
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBIT_URL=amqp://rabbitmq:5672
+      - RABBIT_QUEUE=${RABBIT_QUEUE}
     volumes:
-      - ./apps/event-processor/logs:/app/logs
+      - ./apps/events/logs:/app/logs
     networks:
       - telecom-network
 
-  api:
+  events-storage:
+    container_name: events-storage
+    restart: always
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/events-storage/Dockerfile
     ports:
-      - "3000:3000"
+      - '3001:3001'
     depends_on:
-      - database
+      - asterisk
+      - rabbitmq
+      - postgres
     environment:
+      - ASTERISK_HOST=asterisk
+      - ASTERISK_AMI_PORT=5038
+      - ASTERISK_AMI_USERNAME=${ASTERISK_AMI_USERNAME}
+      - ASTERISK_AMI_PASSWORD=${ASTERISK_AMI_PASSWORD}
+      - RABBIT_URL=amqp://rabbitmq:5672
+      - RABBIT_QUEUE=${RABBIT_QUEUE}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
     volumes:
-      - ./apps/api/logs:/app/logs
+      - ./apps/events-storage/logs:/app/logs
     networks:
       - telecom-network
+
+  # api:
+  #   container_name: api
+  #   build:
+  #     context: ./apps/api
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - database
+  #   environment:
+  #     - POSTGRES_HOST=postgres
+  #     - POSTGRES_PORT=5432
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #     - POSTGRES_DB=${POSTGRES_DB}
+  #     - JWT_SECRET=${JWT_SECRET}
+  #     - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+  #   volumes:
+  #     - ./apps/api/logs:/app/logs
+  #   networks:
+  #     - telecom-network
 
 volumes:
   postgres-data:
@@ -92,4 +125,4 @@ volumes:
 
 networks:
   telecom-network:
-    driver: bridge 
+    driver: bridge

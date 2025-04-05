@@ -1,13 +1,10 @@
 {
   "name": "@telecom/logger",
   "version": "0.0.1",
-  "type": "module",
   "main": "dist/index.js",
   "private": true,
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "start:dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\""
   },

@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "start": "node dist/main.js",
-    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "start:dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/main.ts",
     "test": "jest",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\""
@@ -18,7 +18,9 @@
   "devDependencies": {
     "@types/amqplib": "^0.10.0",
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.11",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.13",
     "typescript": "^5.0.0"
   }
-} 
+}

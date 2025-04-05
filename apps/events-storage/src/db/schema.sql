@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS telephony_events (
+CREATE TABLE IF NOT EXISTS call_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_type VARCHAR(255) NOT NULL,
     event_data JSONB NOT NULL,
@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS telephony_events (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on event_type for faster queries
-CREATE INDEX IF NOT EXISTS idx_telephony_events_event_type ON telephony_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_call_events_event_type ON call_events(event_type);
 
--- Create index on created_at for faster time-based queries
-CREATE INDEX IF NOT EXISTS idx_telephony_events_created_at ON telephony_events(created_at); 
+CREATE INDEX IF NOT EXISTS idx_call_events_created_at ON call_events(created_at); 

@@ -42,8 +42,8 @@ const options: LoggerOptions = {
       : undefined,
 };
 
-const stdout = Pino.pino(options);
-const stderr = Pino.pino(options, destination(2));
+const stdout = Pino(options);
+const stderr = Pino(options, destination(2));
 
 const logger: Pick<Logger, Level> = {
   trace: stdout.trace.bind(stdout),

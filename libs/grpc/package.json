@@ -1,0 +1,23 @@
+{
+  "name": "@telecom/grpc",
+  "version": "0.0.1",
+  "description": "Protocol buffer definitions and generated types for Telecom services",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "generate": "ts-node scripts/generate.ts",
+    "build": "tsc",
+    "clean": "rimraf src/generated"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.9.0",
+    "protoc": "^1.1.3"
+  },
+  "devDependencies": {
+    "@grpc/proto-loader": "^0.7.13",
+    "rimraf": "^5.0.0",
+    "ts-node": "^10.9.2",
+    "ts-proto": "^2.7.0",
+    "typescript": "^5.0.0"
+  }
+}

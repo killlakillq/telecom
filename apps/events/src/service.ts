@@ -1,32 +1,29 @@
-import { AsteriskConfig, RabbitMQConfig } from '@/types';
+import config from '@telecom/config';
 import logger from '@telecom/logger';
-import amqp, { Channel, ChannelModel } from 'amqplib';
+import amqplib from 'amqplib';
 import ami from 'asterisk-manager';
 
 export class AsteriskEventsService {
   private ami: ReturnType<typeof ami>;
-  private channel: Channel;
-  private connection: ChannelModel;
+  private channel: AmqpChannel;
+  private connection: AmqpConnection;
 
-  public constructor(
-    private readonly asteriskConfig: AsteriskConfig,
-    private readonly rabbitConfig: RabbitMQConfig,
-  ) {
+  public constructor() {
     this.ami = ami(
-      asteriskConfig.port,
-      asteriskConfig.host,
-      asteriskConfig.username,
-      asteriskConfig.password,
+      config.asterisk.port,
+      config.asterisk.host,
+      config.asterisk.username,
+      config.asterisk.password,
       true,
     );
   }
 
   public async start(): Promise<void> {
     try {
-      this.connection = await amqp.connect(this.rabbitConfig.url);
+      this.connection = await amqplib.connect(config.rabbit.url);
       this.channel = await this.connection.createChannel();
 
-      await this.channel.assertQueue(this.rabbitConfig.queue, {
+      await this.channel.assertQueue(config.rabbit.queue, {
         durable: true,
       });
 
@@ -52,26 +49,17 @@ export class AsteriskEventsService {
   }
 
   private async handleAsteriskEvent(event: any): Promise<void> {
+    if (!this.channel) return;
+
     try {
-      if (!this.channel) {
-        throw new Error('RabbitMQ channel not available');
-      }
+      const message = JSON.stringify({
+        event: event.event,
+        data: event,
+      });
 
-      if (
-        event.event === 'Newchannel' ||
-        event.event === 'Hangup' ||
-        event.event === 'Bridge' ||
-        event.event === 'QueueMember'
-      ) {
-        const message = JSON.stringify({
-          timestamp: new Date().toISOString(),
-          event: event.event,
-          data: event,
-        });
-
-        this.channel.sendToQueue(this.rabbitConfig.queue, Buffer.from(message));
-        logger.debug(`Forwarded ${event.event} event to RabbitMQ`);
-      }
+      this.channel.sendToQueue(config.rabbit.queue, Buffer.from(message), {
+        persistent: true,
+      });
     } catch (error) {
       logger.error('Error handling Asterisk event:', { error, event });
     }
@@ -86,12 +74,13 @@ export class AsteriskEventsService {
     try {
       if (this.channel) {
         await this.channel.close();
+        this.channel = null;
       }
       if (this.connection) {
         await this.connection.close();
+        this.connection = null;
       }
       this.ami.disconnect();
-      logger.info('Service stopped successfully');
     } catch (error) {
       logger.error('Error stopping service:', { error });
     }
