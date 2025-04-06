@@ -1,9 +1,7 @@
 services:
   asterisk:
     container_name: asterisk
-    build:
-      context: ./asterisk
-      dockerfile: Dockerfile
+    image: andrius/asterisk:latest
     ports:
       - '5060:5060/udp'
       - '5060:5060/tcp'
@@ -33,16 +31,20 @@ services:
 
   postgres:
     container_name: postgres
-    image: timescale/timescaledb:latest-pg14
+    image: timescale/timescaledb:latest-pg16
     ports:
       - '5432:5432'
     environment:
-      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - POSTGRES_MULTIPLE_DATABASES=events,api
+      - LANG=en_US.utf8
+      - LC_ALL=en_US.utf8
+      - LC_CTYPE=en_US.utf8
+      - LC_COLLATE=en_US.utf8
     volumes:
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
       - postgres-data:/var/lib/postgresql/data
-      - ./apps/api/src/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
       - telecom-network
 
@@ -52,72 +54,41 @@ services:
       context: .
       dockerfile: apps/events/Dockerfile
     ports:
-      - '3000:3000'
-    depends_on:
-      - asterisk
-      - rabbitmq
-    environment:
-      - ASTERISK_HOST=asterisk
-      - ASTERISK_AMI_PORT=5038
-      - ASTERISK_AMI_USERNAME=${ASTERISK_AMI_USERNAME}
-      - ASTERISK_AMI_PASSWORD=${ASTERISK_AMI_PASSWORD}
-      - RABBIT_URL=amqp://rabbitmq:5672
-      - RABBIT_QUEUE=${RABBIT_QUEUE}
-    volumes:
-      - ./apps/events/logs:/app/logs
-    networks:
-      - telecom-network
-
-  events-storage:
-    container_name: events-storage
-    restart: always
-    build:
-      context: .
-      dockerfile: apps/events-storage/Dockerfile
-    ports:
       - '3001:3001'
     depends_on:
       - asterisk
       - rabbitmq
       - postgres
     environment:
+      - NODE_ENV=production
       - ASTERISK_HOST=asterisk
       - ASTERISK_AMI_PORT=5038
       - ASTERISK_AMI_USERNAME=${ASTERISK_AMI_USERNAME}
       - ASTERISK_AMI_PASSWORD=${ASTERISK_AMI_PASSWORD}
       - RABBIT_URL=amqp://rabbitmq:5672
       - RABBIT_QUEUE=${RABBIT_QUEUE}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      - DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/events
     volumes:
-      - ./apps/events-storage/logs:/app/logs
+      - ./apps/events/logs:/app/logs
     networks:
       - telecom-network
 
-  # api:
-  #   container_name: api
-  #   build:
-  #     context: ./apps/api
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - '3000:3000'
-  #   depends_on:
-  #     - database
-  #   environment:
-  #     - POSTGRES_HOST=postgres
-  #     - POSTGRES_PORT=5432
-  #     - POSTGRES_USER=${POSTGRES_USER}
-  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  #     - POSTGRES_DB=${POSTGRES_DB}
-  #     - JWT_SECRET=${JWT_SECRET}
-  #     - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
-  #   volumes:
-  #     - ./apps/api/logs:/app/logs
-  #   networks:
-  #     - telecom-network
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - '3002:3002'
+    depends_on:
+      - postgres
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/users
+    volumes:
+      - ./apps/api/logs:/app/logs
+    networks:
+      - telecom-network
 
 volumes:
   postgres-data:

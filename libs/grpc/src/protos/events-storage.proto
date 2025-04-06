@@ -3,45 +3,41 @@ syntax = "proto3";
 package eventsStorage;
 
 service EventsStorage {
-  rpc getEvent (GetEventRequest) returns (GetEventResponse);
   rpc getEvents (GetEventsRequest) returns (GetEventsResponse);
+  rpc createEvent (CreateEventRequest) returns (CreateEventResponse);
 }
 
-message GetEventRequest {
-  string event_id = 1;
-}
-
-message GetEventResponse {
-  string eventType = 1;
-  // string event_id = 1;
-  // string event_type = 2;
-  // string event_data = 3;
-  // string source = 4;
-  // int64 timestamp = 5;
-  // bool success = 6;
-  // string error = 7;
-}
-
-message GetEventsRequest {
-  string eventType = 1;
-  // string source = 2;
-  // int64 start_timestamp = 3;
-  // int64 end_timestamp = 4;
-  // int32 limit = 5;
-  // int32 offset = 6;
-}
-
-message GetEventsResponse {
-  string eventType = 1;
-  // int32 total = 2;
-  // bool success = 3;
-  // string error = 4;
-}
-
-message Event {
-  string event_id = 1;
+message CreateEventRequest {
   string event_type = 2;
   string event_data = 3;
   string source = 4;
-  int64 timestamp = 5;
-} 
+    int32 timestamp = 5;
+}
+
+message CreateEventResponse {
+  Event event = 1;
+}
+
+message GetEventsRequest {
+  string caller_id = 1;
+  string event_type = 2;
+  string event_data = 3;
+  string source = 4;
+  int32 start_timestamp = 5;
+  int32 end_timestamp = 6;
+  int32 limit = 7;
+  int32 offset = 8;
+}
+
+message GetEventsResponse {
+  repeated Event events = 1;
+  int32 total_count = 2;
+}
+
+message Event {
+  string id = 1;
+  string event_type = 2;
+  string event_data = 3;
+  string source = 4;
+  int32 timestamp = 5;
+}

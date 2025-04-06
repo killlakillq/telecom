@@ -1,17 +1,20 @@
+import { RabbitProducer } from '@/producer';
 import { AsteriskEventsService } from '@/service';
+import { withErrorHandling } from '@/utils/error-handler';
 import logger from '@telecom/logger';
 
 const main = async () => {
-  const service = new AsteriskEventsService();
+  const service = new AsteriskEventsService(new RabbitProducer());
 
-  await service.start();
-  logger.info('Asterisk events service started');
+  await withErrorHandling(async () => {
+    await service.start();
+    logger.info('Asterisk events service started');
+  }, 'start');
 
-  process.on('SIGINT', async () => {
-    logger.info('Received SIGINT signal, stopping service...');
-    await service.stop();
+  process.on('SIGINT', () => {
+    logger.info('shutting down');
     process.exit(0);
   });
 };
 
-main();
+void main();

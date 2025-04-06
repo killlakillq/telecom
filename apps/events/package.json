@@ -8,18 +8,20 @@
     "start:dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/main.ts",
     "test": "jest",
     "lint": "eslint \"src/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "migrate": "ts-node -r tsconfig-paths/register src/db/migrate.ts"
   },
   "dependencies": {
     "@telecom/config": "^0.0.1",
     "@telecom/logger": "^0.0.1",
     "amqplib": "^0.10.0",
-    "asterisk-manager": "^0.2.0"
+    "asterisk-ami-client": "^1.1.5",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.0",
-    "@types/asterisk-manager": "^0.0.1",
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.10.9",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.0"
   }

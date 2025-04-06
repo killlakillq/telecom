@@ -19,8 +19,8 @@ interface Config {
   };
   nodeEnv: string;
   jwt: {
-    accessSecret: string;
-    refreshSecret: string;
+    secret: string;
+    expiresIn: number;
   };
   prettyLogging: string;
   asterisk: {
@@ -38,7 +38,8 @@ interface Config {
     port: number;
     username: string;
     password: string;
-    database: string;
+    apiDatabase: string;
+    eventsDatabase: string;
   };
   api: {
     address: string;
@@ -57,49 +58,50 @@ interface Config {
   };
 }
 export default {
-  logLevel: process.env['LOG_LEVEL']! as Level,
+  logLevel: process.env['LOG_LEVEL'] as Level,
   env: process.env['ENV_NAME'],
   applicationName: 'telecom',
   version: process.env['VERSION'] || 'latest',
   http: {
-    port: parseInt(process.env['PORT'] as string),
+    port: parseInt(process.env['PORT']),
   },
   nodeEnv: process.env['NODE_ENV'],
   jwt: {
-    accessSecret: process.env['JWT_ACCESS_SECRET'],
-    refreshSecret: process.env['JWT_REFRESH_SECRET'],
+    secret: process.env['JWT_SECRET'],
+    expiresIn: parseInt(process.env['JWT_EXPIRES_IN']),
   },
   prettyLogging: process.env['PRETTY_LOGGING'],
   asterisk: {
-    host: process.env['ASTERISK_HOST'] as string,
-    port: parseInt(process.env['ASTERISK_PORT'] as string),
-    username: process.env['ASTERISK_USERNAME'] as string,
-    password: process.env['ASTERISK_PASSWORD'] as string,
+    host: process.env['ASTERISK_AMI_HOST'],
+    port: parseInt(process.env['ASTERISK_AMI_PORT']),
+    username: process.env['ASTERISK_AMI_USERNAME'],
+    password: process.env['ASTERISK_AMI_PASSWORD'],
   },
   rabbit: {
-    url: process.env['RABBIT_URL'] as string,
-    queue: process.env['RABBIT_QUEUE'] as string,
+    url: process.env['RABBIT_URL'],
+    queue: process.env['RABBIT_QUEUE'],
   },
   postgres: {
-    host: process.env['POSTGRES_HOST'] as string,
-    port: parseInt(process.env['POSTGRES_PORT'] as string),
-    username: process.env['POSTGRES_USERNAME'] as string,
-    password: process.env['POSTGRES_PASSWORD'] as string,
-    database: process.env['POSTGRES_DATABASE'] as string,
+    host: process.env['POSTGRES_HOST'],
+    port: parseInt(process.env['POSTGRES_PORT']),
+    username: process.env['POSTGRES_USERNAME'],
+    password: process.env['POSTGRES_PASSWORD'],
+    apiDatabase: process.env['POSTGRES_API_DATABASE'],
+    eventsDatabase: process.env['POSTGRES_EVENTS_DATABASE'],
   },
   api: {
-    address: process.env['API_ADDRESS'] as string,
-    host: process.env['API_HOST'] as string,
-    port: parseInt(process.env['API_PORT'] as string),
+    address: process.env['API_ADDRESS'],
+    host: process.env['API_HOST'],
+    port: parseInt(process.env['API_PORT']),
   },
   eventsStorage: {
-    address: process.env['EVENTS_STORAGE_ADDRESS'] as string,
-    host: process.env['EVENTS_STORAGE_HOST'] as string,
-    port: parseInt(process.env['EVENTS_STORAGE_PORT'] as string),
+    address: process.env['EVENTS_STORAGE_ADDRESS'],
+    host: process.env['EVENTS_STORAGE_HOST'],
+    port: parseInt(process.env['EVENTS_STORAGE_PORT']),
   },
   events: {
-    address: process.env['EVENTS_ADDRESS'] as string,
-    host: process.env['EVENTS_HOST'] as string,
-    port: parseInt(process.env['EVENTS_PORT'] as string),
+    address: process.env['EVENTS_ADDRESS'],
+    host: process.env['EVENTS_HOST'],
+    port: parseInt(process.env['EVENTS_PORT']),
   },
 } satisfies Config;

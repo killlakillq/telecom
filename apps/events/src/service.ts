@@ -1,88 +1,39 @@
+import { RabbitProducer } from '@/producer';
 import config from '@telecom/config';
-import logger from '@telecom/logger';
-import amqplib from 'amqplib';
-import ami from 'asterisk-manager';
+import AsteriskAmi, { AmiEvent } from 'asterisk-ami-client';
+import os from 'node:os';
 
 export class AsteriskEventsService {
-  private ami: ReturnType<typeof ami>;
-  private channel: AmqpChannel;
-  private connection: AmqpConnection;
+  private ami: AsteriskAmi;
 
-  public constructor() {
-    this.ami = ami(
-      config.asterisk.port,
-      config.asterisk.host,
-      config.asterisk.username,
-      config.asterisk.password,
-      true,
-    );
+  public constructor(private producer: RabbitProducer) {
+    this.ami = new AsteriskAmi({
+      reconnect: true,
+      keepAlive: true,
+    });
   }
 
   public async start(): Promise<void> {
-    try {
-      this.connection = await amqplib.connect(config.rabbit.url);
-      this.channel = await this.connection.createChannel();
+    await this.ami.connect(config.asterisk.username, config.asterisk.password, {
+      host: config.asterisk.host,
+      port: config.asterisk.port,
+    });
 
-      await this.channel.assertQueue(config.rabbit.queue, {
-        durable: true,
-      });
+    await this.producer.setup();
 
-      this.ami.keepConnected();
+    this.ami.on('event', (event: AmiEvent) => {
+      const payload = {
+        eventType: event.Event,
+        eventData: event,
+        source: 'asterisk@' + os.hostname(),
+        timestamp: new Date().toISOString(),
+      };
 
-      this.ami.on('connect', () => {
-        logger.info('Connected to Asterisk AMI');
-        this.ami.on('rawevent', this.handleAsteriskEvent.bind(this));
-      });
-
-      this.ami.on('error', (err: Error) => {
-        logger.error('AMI Error:', { error: err });
-      });
-
-      this.connection.on('close', () => {
-        logger.info('RabbitMQ connection closed');
-        this.reconnect();
-      });
-    } catch (error) {
-      logger.error('Error starting service:', { error });
-      this.reconnect();
-    }
+      this.producer.sendToQueue(payload);
+    });
   }
 
-  private async handleAsteriskEvent(event: any): Promise<void> {
-    if (!this.channel) return;
-
-    try {
-      const message = JSON.stringify({
-        event: event.event,
-        data: event,
-      });
-
-      this.channel.sendToQueue(config.rabbit.queue, Buffer.from(message), {
-        persistent: true,
-      });
-    } catch (error) {
-      logger.error('Error handling Asterisk event:', { error, event });
-    }
-  }
-
-  private async reconnect(): Promise<void> {
-    logger.info('Attempting to reconnect...');
-    setTimeout(() => this.start(), 5000);
-  }
-
-  public async stop(): Promise<void> {
-    try {
-      if (this.channel) {
-        await this.channel.close();
-        this.channel = null;
-      }
-      if (this.connection) {
-        await this.connection.close();
-        this.connection = null;
-      }
-      this.ami.disconnect();
-    } catch (error) {
-      logger.error('Error stopping service:', { error });
-    }
+  public stop(): void {
+    this.ami.disconnect();
   }
 }

@@ -4,31 +4,19 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY lerna.json ./
-COPY tsconfig.base.json ./
+COPY tsconfig*.json ./
 
-COPY apps/events/package*.json ./apps/events/
-COPY apps/events/tsconfig.json ./apps/events/
-
-COPY libs/ ./libs/
-
-COPY .env ./
-COPY .env.example ./
+COPY libs ./libs
+COPY apps/events ./apps/events
+COPY ./.env ./.env
+COPY ./.env.example ./.env.example 
 
 RUN npm install
-RUN npm install -g tsc-alias
 
-COPY apps/events/ ./apps/events/
+RUN npm run build
 
-RUN npm run build -w @telecom/logger
-RUN npm run build -w @telecom/config
+ENV NODE_ENV=production
 
-RUN npm run build -w @telecom/events
-RUN cd apps/events && tsc-alias
-
-RUN ls -la /app/apps/events/dist
-
-WORKDIR /app/apps/events
-
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["npm", "run", "start"]

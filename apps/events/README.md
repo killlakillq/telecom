@@ -1,24 +1,27 @@
 # Asterisk Events Service
 
-This service connects to Asterisk via AMI (Asterisk Manager Interface) and forwards call-related events to RabbitMQ.
+This service connects to Asterisk via AMI (Asterisk Manager Interface), captures call-related events, and forwards them to a RabbitMQ queue for processing by other services.
 
 ## Features
 
-- Connects to Asterisk AMI
-- Listens for call-related events (Newchannel, Hangup, Bridge, QueueMember)
+- Connects to Asterisk AMI using `asterisk-ami-client`
+- Listens for all Asterisk events (not limited to specific types)
+- Enriches events with metadata (timestamp, source hostname)
 - Forwards events to RabbitMQ queue
-- Automatic reconnection on connection loss
+- Automatic reconnection for both Asterisk and RabbitMQ
 - Graceful shutdown handling
+- TypeScript implementation with strong typing
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v20 or higher)
 - Asterisk server with AMI enabled
 - RabbitMQ server
 
 ## Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
@@ -40,31 +43,56 @@ The following environment variables can be configured:
 
 ## Usage
 
-Development mode:
+Development mode::
+
 ```bash
-npm run dev
+npm run start:dev
 ```
 
 Production mode:
+
 ```bash
 npm run build
 npm start
 ```
 
-## Events
+Docker:
 
-The service forwards the following Asterisk events to RabbitMQ:
+```bash
+docker build -t events .
+docker run -p 3001:3001 events
+```
 
+## Event Format
+
+The service forwards all Asterisk events to RabbitMQ with the following structure:
+```json
+{
+"eventType": "EventName",
+"eventData": { / raw event data from Asterisk / },
+"source": "asterisk@hostname",
+"timestamp": "2023-06-01T12:34:56.789Z"
+}
+```
+
+
+Common event types include:
 - `Newchannel`: When a new channel is created
 - `Hangup`: When a call is hung up
 - `Bridge`: When channels are bridged
 - `QueueMember`: When queue member status changes
-
-Each event message includes:
-- timestamp
-- event type
-- full event data from Asterisk
+- Many others provided by Asterisk AMI
 
 ## Error Handling
 
-The service includes automatic reconnection logic for both Asterisk AMI and RabbitMQ connections. If either connection is lost, the service will attempt to reconnect every 5 seconds. 
+The service implements robust error handling:
+- Automatic reconnection for both Asterisk AMI and RabbitMQ
+- Graceful shutdown on SIGINT signals
+- Structured logging with context information
+- Error details are logged but service attempts to continue operation
+
+## Development
+
+This service is part of a microservice architecture and uses shared libraries:
+- `@telecom/config` - For configuration management
+- `@telecom/logger` - For structured logging

@@ -1,13 +1,18 @@
+import { Payload } from '@/common/types/payload.interface';
+import { JWT } from '@fastify/jwt';
 import 'fastify';
 
 declare module 'fastify' {
-  interface FastifyInstance {
-    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
-  }
   interface FastifyRequest {
-    user?: {
-      id: string;
-      phoneNumber: string;
-    };
+    jwt: JWT;
+  }
+  export interface FastifyInstance {
+    authenticate: any;
+  }
+}
+
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    user: Payload;
   }
 }

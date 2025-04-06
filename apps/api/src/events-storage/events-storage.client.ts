@@ -4,8 +4,6 @@ import * as protoLoader from '@grpc/proto-loader';
 import {
   EventsStorage,
   EventsStorageClientProto,
-  GetEventRequest,
-  GetEventResponse,
   GetEventsRequest,
   GetEventsResponse,
 } from '@telecom/grpc';
@@ -15,7 +13,7 @@ import { join } from 'path';
 const protoPath = join(process.cwd(), '../../libs/grpc/src/protos/events-storage.proto');
 
 const packageDefinition = protoLoader.loadSync(protoPath, {
-  keepCase: true,
+  keepCase: false,
   longs: String,
   enums: String,
   defaults: true,
@@ -34,15 +32,8 @@ export class EventsStorageClient {
     logger.info(`Initialized EventsStorageService with server address: ${serverAddress}`);
   }
 
-  public async getEvent(params: GetEventRequest): Promise<any> {
-    return GrpcWrapper<GetEventRequest, GetEventResponse>(
-      this.client.getEvent.bind(this.client),
-      params,
-    );
-  }
-
-  public async getEvents(params: GetEventsRequest): Promise<GetEventsResponse> {
-    return GrpcWrapper<GetEventsRequest, GetEventsResponse>(
+  public async getEvents(params: Partial<GetEventsRequest>): Promise<GetEventsResponse> {
+    return GrpcWrapper<Partial<GetEventsRequest>, GetEventsResponse>(
       this.client.getEvents.bind(this.client),
       params,
     );

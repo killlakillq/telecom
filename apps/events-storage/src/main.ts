@@ -1,15 +1,15 @@
-import { Database } from '@/db/client';
+import { Database } from '@/database/client';
+import { EventRepository } from '@/events-storage/events-storage.repository';
+import { EventsStorageService } from '@/events-storage/events-storage.service';
 import { GrpcServer } from '@/grpc';
-import { EventRepository } from '@/repository';
-import { EventsStorageService } from '@/services/service';
 import config from '@telecom/config';
 import logger from '@telecom/logger';
 
 const main = async () => {
-  const db = new Database();
+  const db = Database.getInstance();
   const client = await db.getClient();
-  const eventRepository = new EventRepository(client);
 
+  const eventRepository = new EventRepository(client);
   const service = new EventsStorageService(eventRepository);
   const grpcServer = new GrpcServer(service);
 
@@ -26,4 +26,4 @@ const main = async () => {
   });
 };
 
-main();
+void main();

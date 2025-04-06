@@ -1,18 +1,24 @@
 import { EventsStorageClient } from '@/events-storage/events-storage.client';
-import { GetEventRequest, GetEventsRequest } from '@telecom/grpc';
+import { UserService } from '@/user/user.service';
+import { GetEventsRequest } from '@telecom/grpc';
 
 export class EventsStorageService {
-  public constructor(private readonly client: EventsStorageClient) {}
+  public constructor(
+    private readonly client: EventsStorageClient,
+    private readonly userService: UserService,
+  ) {}
 
-  public async getEvent(params: GetEventRequest) {
-    const result = await this.client.getEvent(params);
+  public async getEvents(userId: string, params: Partial<GetEventsRequest>) {
+    const user = await this.userService.findById(userId);
 
-    return result;
-  }
+    const events = await this.client.getEvents({
+      ...params,
+      callerId: user.phoneNumber,
+    });
 
-  public async getEvents(params: GetEventsRequest) {
-    const result = await this.client.getEvents(params);
-
-    return result;
+    return events.events.map((event) => ({
+      ...event,
+      eventData: event.eventData ? JSON.parse(event.eventData) : null,
+    }));
   }
 }

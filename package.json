@@ -21,17 +21,35 @@
     "test": "lerna run test",
     "lint": "lerna run lint",
     "generate:proto": "lerna run generate --scope=@telecom/grpc",
-    "clean:proto": "lerna run clean --scope=@telecom/grpc"
+    "clean:proto": "lerna run clean --scope=@telecom/grpc",
+    "db:migrate:events": "ts-node apps/events-storage/src/database/migrate.ts events --tsconfig=apps/events-storage/tsconfig.json",
+    "db:migrate:api": "ts-node apps/api/src/database/migrate.ts --tsconfig=apps/api/tsconfig.json",
+    "db:migrate:events:dev": "cross-env EVENTS_POSTGRES_HOST=localhost EVENTS_POSTGRES_PORT=5432 EVENTS_POSTGRES_USERNAME=postgres EVENTS_POSTGRES_PASSWORD=postgres EVENTS_POSTGRES_DATABASE=events npm run db:migrate:events",
+    "db:migrate:api:dev": "cross-env API_POSTGRES_HOST=localhost API_POSTGRES_PORT=5432 API_POSTGRES_USERNAME=postgres API_POSTGRES_PASSWORD=postgres API_POSTGRES_DATABASE=api npm run db:migrate:api",
+    "db:migrate:events:prod": "cross-env EVENTS_POSTGRES_HOST=production-events-db EVENTS_POSTGRES_PORT=5432 npm run db:migrate:events",
+    "db:migrate:api:prod": "cross-env API_POSTGRES_HOST=production-api-db API_POSTGRES_PORT=5432 npm run db:migrate:api",
+    "db:migrate:all:dev": "npm run db:migrate:events:dev && npm run db:migrate:api:dev",
+    "db:migrate:all:prod": "npm run db:migrate:events:prod && npm run db:migrate:api:prod",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:migrate": "docker-compose up migrate-events migrate-api",
+    "docker:migrate:events": "docker-compose up migrate-events",
+    "docker:migrate:api": "docker-compose up migrate-api",
+    "docker:restart": "npm run docker:down && npm run docker:up && npm run docker:migrate"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
     "lerna": "^8.2.1",
     "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.13",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.29.0"
   }
 }

@@ -6,7 +6,7 @@ A Docker-based telephony service with Asterisk PBX, event processing, and API fu
 
 - Asterisk PBX with SIP lines
 - Event processing service
-- TimescaleDB for call events
+- PostgreSQL + TimescaleDB for call events storage
 - REST API with JWT authentication
 - Docker deployment
 
@@ -14,7 +14,7 @@ A Docker-based telephony service with Asterisk PBX, event processing, and API fu
 
 - Docker
 - Docker Compose
-- Node.js >= 18 (for local development)
+- Node.js >= 20 (for local development)
 
 ## Project Structure
 
@@ -22,8 +22,8 @@ A Docker-based telephony service with Asterisk PBX, event processing, and API fu
 .
 ├── apps/
 │   ├── api/              # API service
-│   ├── database/         # Database service
-│   └── event-processor/  # Event processor service
+│   ├── events/           # Event processing service
+│   └── events-storage/   # Event storage service
 ├── asterisk/            # Asterisk configuration
 │   ├── config/
 │   └── logs/
@@ -35,38 +35,68 @@ A Docker-based telephony service with Asterisk PBX, event processing, and API fu
 Create a `.env` file in the root directory with the following variables:
 
 ```env
-# Asterisk AMI
+LOG_LEVEL=debug
+ENV_NAME=development
+VERSION=1.0.0
+PORT=3000
+NODE_ENV=development
+JWT_SECRET=your-secret
+JWT_EXPIRES_IN=3600
+PRETTY_LOGGING=1
+
+# Asterisk Configuration
+ASTERISK_AMI_HOST=0.0.0.0
+ASTERISK_AMI_PORT=5038
 ASTERISK_AMI_USERNAME=admin
 ASTERISK_AMI_PASSWORD=admin
 
-# RabbitMQ
-RABBITMQ_USERNAME=admin
-RABBITMQ_PASSWORD=admin
+# RabbitMQ Configuration
+RABBIT_URL=amqp://localhost:5672
+RABBIT_QUEUE=events
+RABBITMQ_USERNAME=guest
+RABBITMQ_PASSWORD=guest
 
-# PostgreSQL
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=admin
-POSTGRES_DB=telecom
+# PostgreSQL Configuration
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USERNAME=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_API_DATABASE=api
+POSTGRES_EVENTS_DATABASE=events
 
-# JWT
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRES_IN=24h
+# Events Storage Configuration
+EVENTS_STORAGE_ADDRESS=localhost:50051
+EVENTS_STORAGE_PORT=50051
+EVENTS_STORAGE_HOST=localhost
+
+# Events Configuration
+EVENTS_ADDRESS=localhost:50052
+EVENTS_HOST=localhost
+EVENTS_PORT=50052
+
+# API Configuration
+API_ADDRESS=localhost:3000
+API_HOST=0.0.0.0
+API_PORT=3000
 ```
 
 ## Running the Service
 
 1. Clone the repository:
+
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/killlakillq/telecom.git
    cd telecom
    ```
 
 2. Create the `.env` file:
+
    ```bash
    cp .env.example .env
    ```
 
 3. Start the services:
+
    ```bash
    docker-compose up -d
    ```
@@ -82,24 +112,23 @@ JWT_EXPIRES_IN=24h
 
 - `POST /api/register` - Register a new user
 - `POST /api/login` - Login and get JWT token
-- `POST /api/logout` - Logout and invalidate token
 
 ### Protected Endpoints
 
-- `GET /api/profile` - Get user profile
-- `GET /api/calls` - Get user's call history
-  - Query parameters:
-    - `startDate` (optional) - Filter by start date
-    - `endDate` (optional) - Filter by end date
+- `GET /api/users/me` - Get user profile
+- `GET /api/events` - Get user's events
 
 ## SIP Configuration
 
 The service includes two SIP extensions:
+
 - Extension 1001 (password: 1001)
 - Extension 1002 (password: 1002)
 
 To test calls between extensions:
+
 1. Configure your SIP client with the following settings:
+
    - Server: Your server IP
    - Port: 5060
    - Username: 1001 or 1002
@@ -112,45 +141,38 @@ To test calls between extensions:
 ### Running Services Locally
 
 1. Install dependencies:
+
    ```bash
    cd apps/api && npm install
-   cd ../database && npm install
-   cd ../event-processor && npm install
+   cd ../events-storage && npm install
    ```
 
 2. Start services in development mode:
+
    ```bash
    # Terminal 1 - API
    cd apps/api && npm run start:dev
 
-   # Terminal 2 - Database
-   cd apps/database && npm run start:dev
-
-   # Terminal 3 - Event Processor
-   cd apps/event-processor && npm run start:dev
+   # Terminal 2 - Event Processor
+   cd apps/events && npm run start:dev
    ```
-
-### Logs
-
-Logs are stored in the following locations:
-- API: `apps/api/logs/`
-- Database: `apps/database/logs/`
-- Event Processor: `apps/event-processor/logs/`
-- Asterisk: `asterisk/logs/`
 
 ## Troubleshooting
 
 1. Check service status:
+
    ```bash
    docker-compose ps
    ```
 
 2. View logs:
+
    ```bash
    docker-compose logs -f [service-name]
    ```
 
 3. Restart services:
+
    ```bash
    docker-compose restart [service-name]
    ```
@@ -159,7 +181,3 @@ Logs are stored in the following locations:
    ```bash
    docker-compose build [service-name]
    ```
-
-## License
-
-MIT 

@@ -7,6 +7,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src/generated/**/*", "src/types/**/*"],
+  "include": ["src/generated/**/*", "src/types/**/*", "src/index.ts"],
   "exclude": ["node_modules", "dist"]
 }

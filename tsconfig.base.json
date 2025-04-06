@@ -25,6 +25,7 @@
     },
     "composite": true
   },
+  "exclude": ["node_modules", "dist"],
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   }
