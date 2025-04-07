@@ -2,9 +2,9 @@ import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
 import { LoginUserRequest } from '@/auth/dto/login-user.request';
 import { RegisterUserRequest } from '@/auth/dto/register-user.request';
+import { UserRepository } from '@/core/user/user.repository';
+import { UserService } from '@/core/user/user.service';
 import { Database } from '@/database/client';
-import { UserRepository } from '@/user/user.repository';
-import { UserService } from '@/user/user.service';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 

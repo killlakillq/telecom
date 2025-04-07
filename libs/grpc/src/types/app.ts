@@ -17,3 +17,8 @@ export type EventsStorageServerProto = GrpcObject & {
     service: ServiceDefinition<UntypedServiceImplementation>;
   };
 };
+
+export type GrpcTimestamp = {
+  seconds: number | string;
+  nanos: number;
+};

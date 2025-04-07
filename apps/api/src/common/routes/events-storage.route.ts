@@ -1,10 +1,10 @@
+import { GetEventsRequest } from '@/core/events-storage/dto/get-events.request';
+import { EventsStorageClient } from '@/core/events-storage/events-storage.client';
+import { EventsStorageController } from '@/core/events-storage/events-storage.controller';
+import { EventsStorageService } from '@/core/events-storage/events-storage.service';
+import { UserRepository } from '@/core/user/user.repository';
+import { UserService } from '@/core/user/user.service';
 import { Database } from '@/database/client';
-import { GetEventsRequest } from '@/events-storage/dto/get-events.request';
-import { EventsStorageClient } from '@/events-storage/events-storage.client';
-import { EventsStorageController } from '@/events-storage/events-storage.controller';
-import { EventsStorageService } from '@/events-storage/events-storage.service';
-import { UserRepository } from '@/user/user.repository';
-import { UserService } from '@/user/user.service';
 import config from '@telecom/config';
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';

@@ -6,7 +6,7 @@ import { NotFoundException } from '@/common/exceptions/not-found.exception';
 import { UnauthorizedException } from '@/common/exceptions/unauthorized.exception';
 import { AuthToken, Payload } from '@/common/types/payload.interface';
 import { Crypto } from '@/common/utils/crypto';
-import { UserService } from '@/user/user.service';
+import { UserService } from '@/core/user/user.service';
 import config from '@telecom/config';
 import jwt, { sign } from 'jsonwebtoken';
 

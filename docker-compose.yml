@@ -50,41 +50,69 @@ services:
 
   events:
     container_name: events
+    restart: always
     build:
       context: .
       dockerfile: apps/events/Dockerfile
     ports:
-      - '3001:3001'
+      - '50052:50052'
     depends_on:
       - asterisk
       - rabbitmq
-      - postgres
     environment:
-      - NODE_ENV=production
-      - ASTERISK_HOST=asterisk
+      - ASTERISK_AMI_HOST=asterisk
       - ASTERISK_AMI_PORT=5038
       - ASTERISK_AMI_USERNAME=${ASTERISK_AMI_USERNAME}
       - ASTERISK_AMI_PASSWORD=${ASTERISK_AMI_PASSWORD}
       - RABBIT_URL=amqp://rabbitmq:5672
       - RABBIT_QUEUE=${RABBIT_QUEUE}
-      - DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/events
-    volumes:
-      - ./apps/events/logs:/app/logs
+    networks:
+      - telecom-network
+
+  events-storage:
+    container_name: events-storage
+    restart: always
+    build:
+      context: .
+      dockerfile: apps/events-storage/Dockerfile
+    ports:
+      - '50051:50051'
+    depends_on:
+      - rabbitmq
+      - postgres
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=events
+      - EVENTS_STORAGE_HOST=events-storage
+      - EVENTS_STORAGE_PORT=50051
+      - RABBIT_URL=amqp://rabbitmq:5672
+      - RABBIT_QUEUE=${RABBIT_QUEUE}
     networks:
       - telecom-network
 
   api:
     container_name: api
+    restart: always
     build:
       context: .
       dockerfile: apps/api/Dockerfile
     ports:
-      - '3002:3002'
+      - '3000:3000'
     depends_on:
+      - events-storage
       - postgres
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/users
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=api
+      - EVENTS_STORAGE_ADDRESS=events-storage:50051
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     volumes:
       - ./apps/api/logs:/app/logs
     networks:

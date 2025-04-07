@@ -1,7 +1,7 @@
+import { UserController } from '@/core/user/user.controller';
+import { UserRepository } from '@/core/user/user.repository';
+import { UserService } from '@/core/user/user.service';
 import { Database } from '@/database/client';
-import { UserController } from '@/user/user.controller';
-import { UserRepository } from '@/user/user.repository';
-import { UserService } from '@/user/user.service';
 import { FastifyInstance } from 'fastify';
 
 export async function userRouter(fastify: FastifyInstance) {

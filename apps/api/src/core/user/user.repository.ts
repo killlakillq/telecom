@@ -1,4 +1,6 @@
 import { AuthToken } from '@/common/types/payload.interface';
+import { CreateUserRequest } from '@/core/user/dto/create-user.request';
+import { CreateUserResponse } from '@/core/user/dto/create-user.response';
 import {
   createAuthTokenQuery,
   createUserQuery,
@@ -8,8 +10,6 @@ import {
   findUserByPhoneNumberQuery,
   findUserByUsernameQuery,
 } from '@/database/queries';
-import { CreateUserRequest } from '@/user/dto/create-user.request';
-import { CreateUserResponse } from '@/user/dto/create-user.response';
 import crypto from 'node:crypto';
 import { PoolClient } from 'pg';
 
@@ -71,7 +71,19 @@ export class UserRepository {
       return null;
     }
 
-    return result.rows[0] as CreateUserResponse;
+    const rows = result.rows[0] as {
+      id: string;
+      username: string;
+      phone_number: string;
+      password: string;
+    };
+
+    return {
+      id: rows.id,
+      username: rows.username,
+      phoneNumber: rows.phone_number,
+      password: rows.password,
+    };
   }
 
   public async findByUsername(username: string): Promise<CreateUserResponse | null> {

@@ -1,8 +1,8 @@
 import { ExceptionMessage } from '@/common/constants/exception.constant';
 import { NotFoundException } from '@/common/exceptions/not-found.exception';
-import { CreateUserRequest } from '@/user/dto/create-user.request';
-import { CreateUserResponse } from '@/user/dto/create-user.response';
-import { UserRepository } from '@/user/user.repository';
+import { CreateUserRequest } from '@/core/user/dto/create-user.request';
+import { CreateUserResponse } from '@/core/user/dto/create-user.response';
+import { UserRepository } from '@/core/user/user.repository';
 
 export class UserService {
   public constructor(private readonly userRepository: UserRepository) {}

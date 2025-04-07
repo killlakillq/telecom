@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "google/protobuf/timestamp.proto";
 
 package eventsStorage;
 
@@ -11,7 +12,7 @@ message CreateEventRequest {
   string event_type = 2;
   string event_data = 3;
   string source = 4;
-    int32 timestamp = 5;
+  google.protobuf.Timestamp timestamp = 5;
 }
 
 message CreateEventResponse {
@@ -23,8 +24,8 @@ message GetEventsRequest {
   string event_type = 2;
   string event_data = 3;
   string source = 4;
-  int32 start_timestamp = 5;
-  int32 end_timestamp = 6;
+  google.protobuf.Timestamp start_timestamp = 5;
+  google.protobuf.Timestamp end_timestamp = 6;
   int32 limit = 7;
   int32 offset = 8;
 }
@@ -39,5 +40,5 @@ message Event {
   string event_type = 2;
   string event_data = 3;
   string source = 4;
-  int32 timestamp = 5;
+  google.protobuf.Timestamp timestamp = 5;
 }

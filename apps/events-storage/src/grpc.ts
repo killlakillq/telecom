@@ -1,4 +1,4 @@
-import { EventsStorageService } from '@/events-storage/events-storage.service';
+import { EventsStorageService } from '@/core/events-storage.service';
 import { loadPackageDefinition, Server, ServerCredentials } from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import { EventsStorageServerProto } from '@telecom/grpc';

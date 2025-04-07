@@ -1,6 +1,6 @@
+import { EventRepository } from '@/core/events-storage.repository';
+import { EventsStorageService } from '@/core/events-storage.service';
 import { Database } from '@/database/client';
-import { EventRepository } from '@/events-storage/events-storage.repository';
-import { EventsStorageService } from '@/events-storage/events-storage.service';
 import { GrpcServer } from '@/grpc';
 import config from '@telecom/config';
 import logger from '@telecom/logger';

@@ -1,6 +1,6 @@
-import { EventsStorageClient } from '@/events-storage/events-storage.client';
-import { UserService } from '@/user/user.service';
-import { GetEventsRequest } from '@telecom/grpc';
+import { EventsStorageClient } from '@/core/events-storage/events-storage.client';
+import { UserService } from '@/core/user/user.service';
+import { GetEventsRequest, GrpcTimestamp, parseGrpcTimestamp } from '@telecom/grpc';
 
 export class EventsStorageService {
   public constructor(
@@ -19,6 +19,7 @@ export class EventsStorageService {
     return events.events.map((event) => ({
       ...event,
       eventData: event.eventData ? JSON.parse(event.eventData) : null,
+      timestamp: parseGrpcTimestamp(event.timestamp as unknown as GrpcTimestamp),
     }));
   }
 }

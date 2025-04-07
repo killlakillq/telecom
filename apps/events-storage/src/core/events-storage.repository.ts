@@ -1,6 +1,6 @@
 import { EventParams } from '@/common/types/events';
 import { saveEventQuery } from '@/database/queries';
-import { Event, GetEventsRequest } from '@telecom/grpc';
+import { Event } from '@telecom/grpc';
 import crypto from 'crypto';
 import { PoolClient } from 'pg';
 
@@ -20,7 +20,16 @@ export class EventRepository {
     return result.rows[0] as Event;
   }
 
-  public async find(params: GetEventsRequest) {
+  public async find(params: {
+    callerId: string;
+    eventType: string;
+    eventData: string;
+    source: string;
+    startTimestamp: Date;
+    endTimestamp: Date;
+    limit: number;
+    offset: number;
+  }) {
     const values: any[] = [params.callerId];
     let i = 2;
 
@@ -66,7 +75,7 @@ export class EventRepository {
       event_type: string;
       event_data: string;
       source: string;
-      timestamp: number;
+      timestamp: Date;
       id: string;
     }[];
   }

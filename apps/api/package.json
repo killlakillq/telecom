@@ -20,14 +20,17 @@
     "@telecom/config": "^0.0.1",
     "@telecom/logger": "^0.0.1",
     "@telecom/proto": "^0.0.1",
+    "dayjs": "^1.11.13",
     "fastify": "^5.2.2",
     "fastify-type-provider-zod": "^4.0.2",
+    "google-protobuf": "^3.21.4",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.0",
     "rxjs": "^7.8.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/google-protobuf": "^3.15.12",
     "@types/jsonwebtoken": "^9.0.0",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.10.9",

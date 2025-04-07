@@ -5,15 +5,16 @@
 // source: events-storage.proto
 
 /* eslint-disable */
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
+import { Timestamp } from './google/protobuf/timestamp';
 
-export const protobufPackage = "eventsStorage";
+export const protobufPackage = 'eventsStorage';
 
 export interface CreateEventRequest {
   eventType: string;
   eventData: string;
   source: string;
-  timestamp: number;
+  timestamp: Date | undefined;
 }
 
 export interface CreateEventResponse {
@@ -25,8 +26,8 @@ export interface GetEventsRequest {
   eventType: string;
   eventData: string;
   source: string;
-  startTimestamp: number;
-  endTimestamp: number;
+  startTimestamp: Date | undefined;
+  endTimestamp: Date | undefined;
   limit: number;
   offset: number;
 }
@@ -41,26 +42,26 @@ export interface Event {
   eventType: string;
   eventData: string;
   source: string;
-  timestamp: number;
+  timestamp: Date | undefined;
 }
 
 function createBaseCreateEventRequest(): CreateEventRequest {
-  return { eventType: "", eventData: "", source: "", timestamp: 0 };
+  return { eventType: '', eventData: '', source: '', timestamp: undefined };
 }
 
 export const CreateEventRequest: MessageFns<CreateEventRequest> = {
   encode(message: CreateEventRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.eventType !== "") {
+    if (message.eventType !== '') {
       writer.uint32(18).string(message.eventType);
     }
-    if (message.eventData !== "") {
+    if (message.eventData !== '') {
       writer.uint32(26).string(message.eventData);
     }
-    if (message.source !== "") {
+    if (message.source !== '') {
       writer.uint32(34).string(message.source);
     }
-    if (message.timestamp !== 0) {
-      writer.uint32(40).int32(message.timestamp);
+    if (message.timestamp !== undefined) {
+      Timestamp.encode(toTimestamp(message.timestamp), writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -97,11 +98,11 @@ export const CreateEventRequest: MessageFns<CreateEventRequest> = {
           continue;
         }
         case 5: {
-          if (tag !== 40) {
+          if (tag !== 42) {
             break;
           }
 
-          message.timestamp = reader.int32();
+          message.timestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -115,26 +116,26 @@ export const CreateEventRequest: MessageFns<CreateEventRequest> = {
 
   fromJSON(object: any): CreateEventRequest {
     return {
-      eventType: isSet(object.eventType) ? globalThis.String(object.eventType) : "",
-      eventData: isSet(object.eventData) ? globalThis.String(object.eventData) : "",
-      source: isSet(object.source) ? globalThis.String(object.source) : "",
-      timestamp: isSet(object.timestamp) ? globalThis.Number(object.timestamp) : 0,
+      eventType: isSet(object.eventType) ? globalThis.String(object.eventType) : '',
+      eventData: isSet(object.eventData) ? globalThis.String(object.eventData) : '',
+      source: isSet(object.source) ? globalThis.String(object.source) : '',
+      timestamp: isSet(object.timestamp) ? fromJsonTimestamp(object.timestamp) : undefined,
     };
   },
 
   toJSON(message: CreateEventRequest): unknown {
     const obj: any = {};
-    if (message.eventType !== "") {
+    if (message.eventType !== '') {
       obj.eventType = message.eventType;
     }
-    if (message.eventData !== "") {
+    if (message.eventData !== '') {
       obj.eventData = message.eventData;
     }
-    if (message.source !== "") {
+    if (message.source !== '') {
       obj.source = message.source;
     }
-    if (message.timestamp !== 0) {
-      obj.timestamp = Math.round(message.timestamp);
+    if (message.timestamp !== undefined) {
+      obj.timestamp = message.timestamp.toISOString();
     }
     return obj;
   },
@@ -144,10 +145,10 @@ export const CreateEventRequest: MessageFns<CreateEventRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<CreateEventRequest>, I>>(object: I): CreateEventRequest {
     const message = createBaseCreateEventRequest();
-    message.eventType = object.eventType ?? "";
-    message.eventData = object.eventData ?? "";
-    message.source = object.source ?? "";
-    message.timestamp = object.timestamp ?? 0;
+    message.eventType = object.eventType ?? '';
+    message.eventData = object.eventData ?? '';
+    message.source = object.source ?? '';
+    message.timestamp = object.timestamp ?? undefined;
     return message;
   },
 };
@@ -203,21 +204,26 @@ export const CreateEventResponse: MessageFns<CreateEventResponse> = {
   create<I extends Exact<DeepPartial<CreateEventResponse>, I>>(base?: I): CreateEventResponse {
     return CreateEventResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<CreateEventResponse>, I>>(object: I): CreateEventResponse {
+  fromPartial<I extends Exact<DeepPartial<CreateEventResponse>, I>>(
+    object: I,
+  ): CreateEventResponse {
     const message = createBaseCreateEventResponse();
-    message.event = (object.event !== undefined && object.event !== null) ? Event.fromPartial(object.event) : undefined;
+    message.event =
+      object.event !== undefined && object.event !== null
+        ? Event.fromPartial(object.event)
+        : undefined;
     return message;
   },
 };
 
 function createBaseGetEventsRequest(): GetEventsRequest {
   return {
-    callerId: "",
-    eventType: "",
-    eventData: "",
-    source: "",
-    startTimestamp: 0,
-    endTimestamp: 0,
+    callerId: '',
+    eventType: '',
+    eventData: '',
+    source: '',
+    startTimestamp: undefined,
+    endTimestamp: undefined,
     limit: 0,
     offset: 0,
   };
@@ -225,23 +231,23 @@ function createBaseGetEventsRequest(): GetEventsRequest {
 
 export const GetEventsRequest: MessageFns<GetEventsRequest> = {
   encode(message: GetEventsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.callerId !== "") {
+    if (message.callerId !== '') {
       writer.uint32(10).string(message.callerId);
     }
-    if (message.eventType !== "") {
+    if (message.eventType !== '') {
       writer.uint32(18).string(message.eventType);
     }
-    if (message.eventData !== "") {
+    if (message.eventData !== '') {
       writer.uint32(26).string(message.eventData);
     }
-    if (message.source !== "") {
+    if (message.source !== '') {
       writer.uint32(34).string(message.source);
     }
-    if (message.startTimestamp !== 0) {
-      writer.uint32(40).int32(message.startTimestamp);
+    if (message.startTimestamp !== undefined) {
+      Timestamp.encode(toTimestamp(message.startTimestamp), writer.uint32(42).fork()).join();
     }
-    if (message.endTimestamp !== 0) {
-      writer.uint32(48).int32(message.endTimestamp);
+    if (message.endTimestamp !== undefined) {
+      Timestamp.encode(toTimestamp(message.endTimestamp), writer.uint32(50).fork()).join();
     }
     if (message.limit !== 0) {
       writer.uint32(56).int32(message.limit);
@@ -292,19 +298,19 @@ export const GetEventsRequest: MessageFns<GetEventsRequest> = {
           continue;
         }
         case 5: {
-          if (tag !== 40) {
+          if (tag !== 42) {
             break;
           }
 
-          message.startTimestamp = reader.int32();
+          message.startTimestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
         }
         case 6: {
-          if (tag !== 48) {
+          if (tag !== 50) {
             break;
           }
 
-          message.endTimestamp = reader.int32();
+          message.endTimestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
         }
         case 7: {
@@ -334,12 +340,14 @@ export const GetEventsRequest: MessageFns<GetEventsRequest> = {
 
   fromJSON(object: any): GetEventsRequest {
     return {
-      callerId: isSet(object.callerId) ? globalThis.String(object.callerId) : "",
-      eventType: isSet(object.eventType) ? globalThis.String(object.eventType) : "",
-      eventData: isSet(object.eventData) ? globalThis.String(object.eventData) : "",
-      source: isSet(object.source) ? globalThis.String(object.source) : "",
-      startTimestamp: isSet(object.startTimestamp) ? globalThis.Number(object.startTimestamp) : 0,
-      endTimestamp: isSet(object.endTimestamp) ? globalThis.Number(object.endTimestamp) : 0,
+      callerId: isSet(object.callerId) ? globalThis.String(object.callerId) : '',
+      eventType: isSet(object.eventType) ? globalThis.String(object.eventType) : '',
+      eventData: isSet(object.eventData) ? globalThis.String(object.eventData) : '',
+      source: isSet(object.source) ? globalThis.String(object.source) : '',
+      startTimestamp: isSet(object.startTimestamp)
+        ? fromJsonTimestamp(object.startTimestamp)
+        : undefined,
+      endTimestamp: isSet(object.endTimestamp) ? fromJsonTimestamp(object.endTimestamp) : undefined,
       limit: isSet(object.limit) ? globalThis.Number(object.limit) : 0,
       offset: isSet(object.offset) ? globalThis.Number(object.offset) : 0,
     };
@@ -347,23 +355,23 @@ export const GetEventsRequest: MessageFns<GetEventsRequest> = {
 
   toJSON(message: GetEventsRequest): unknown {
     const obj: any = {};
-    if (message.callerId !== "") {
+    if (message.callerId !== '') {
       obj.callerId = message.callerId;
     }
-    if (message.eventType !== "") {
+    if (message.eventType !== '') {
       obj.eventType = message.eventType;
     }
-    if (message.eventData !== "") {
+    if (message.eventData !== '') {
       obj.eventData = message.eventData;
     }
-    if (message.source !== "") {
+    if (message.source !== '') {
       obj.source = message.source;
     }
-    if (message.startTimestamp !== 0) {
-      obj.startTimestamp = Math.round(message.startTimestamp);
+    if (message.startTimestamp !== undefined) {
+      obj.startTimestamp = message.startTimestamp.toISOString();
     }
-    if (message.endTimestamp !== 0) {
-      obj.endTimestamp = Math.round(message.endTimestamp);
+    if (message.endTimestamp !== undefined) {
+      obj.endTimestamp = message.endTimestamp.toISOString();
     }
     if (message.limit !== 0) {
       obj.limit = Math.round(message.limit);
@@ -379,12 +387,12 @@ export const GetEventsRequest: MessageFns<GetEventsRequest> = {
   },
   fromPartial<I extends Exact<DeepPartial<GetEventsRequest>, I>>(object: I): GetEventsRequest {
     const message = createBaseGetEventsRequest();
-    message.callerId = object.callerId ?? "";
-    message.eventType = object.eventType ?? "";
-    message.eventData = object.eventData ?? "";
-    message.source = object.source ?? "";
-    message.startTimestamp = object.startTimestamp ?? 0;
-    message.endTimestamp = object.endTimestamp ?? 0;
+    message.callerId = object.callerId ?? '';
+    message.eventType = object.eventType ?? '';
+    message.eventData = object.eventData ?? '';
+    message.source = object.source ?? '';
+    message.startTimestamp = object.startTimestamp ?? undefined;
+    message.endTimestamp = object.endTimestamp ?? undefined;
     message.limit = object.limit ?? 0;
     message.offset = object.offset ?? 0;
     return message;
@@ -440,7 +448,9 @@ export const GetEventsResponse: MessageFns<GetEventsResponse> = {
 
   fromJSON(object: any): GetEventsResponse {
     return {
-      events: globalThis.Array.isArray(object?.events) ? object.events.map((e: any) => Event.fromJSON(e)) : [],
+      events: globalThis.Array.isArray(object?.events)
+        ? object.events.map((e: any) => Event.fromJSON(e))
+        : [],
       totalCount: isSet(object.totalCount) ? globalThis.Number(object.totalCount) : 0,
     };
   },
@@ -468,25 +478,25 @@ export const GetEventsResponse: MessageFns<GetEventsResponse> = {
 };
 
 function createBaseEvent(): Event {
-  return { id: "", eventType: "", eventData: "", source: "", timestamp: 0 };
+  return { id: '', eventType: '', eventData: '', source: '', timestamp: undefined };
 }
 
 export const Event: MessageFns<Event> = {
   encode(message: Event, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== "") {
+    if (message.id !== '') {
       writer.uint32(10).string(message.id);
     }
-    if (message.eventType !== "") {
+    if (message.eventType !== '') {
       writer.uint32(18).string(message.eventType);
     }
-    if (message.eventData !== "") {
+    if (message.eventData !== '') {
       writer.uint32(26).string(message.eventData);
     }
-    if (message.source !== "") {
+    if (message.source !== '') {
       writer.uint32(34).string(message.source);
     }
-    if (message.timestamp !== 0) {
-      writer.uint32(40).int32(message.timestamp);
+    if (message.timestamp !== undefined) {
+      Timestamp.encode(toTimestamp(message.timestamp), writer.uint32(42).fork()).join();
     }
     return writer;
   },
@@ -531,11 +541,11 @@ export const Event: MessageFns<Event> = {
           continue;
         }
         case 5: {
-          if (tag !== 40) {
+          if (tag !== 42) {
             break;
           }
 
-          message.timestamp = reader.int32();
+          message.timestamp = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -549,30 +559,30 @@ export const Event: MessageFns<Event> = {
 
   fromJSON(object: any): Event {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
-      eventType: isSet(object.eventType) ? globalThis.String(object.eventType) : "",
-      eventData: isSet(object.eventData) ? globalThis.String(object.eventData) : "",
-      source: isSet(object.source) ? globalThis.String(object.source) : "",
-      timestamp: isSet(object.timestamp) ? globalThis.Number(object.timestamp) : 0,
+      id: isSet(object.id) ? globalThis.String(object.id) : '',
+      eventType: isSet(object.eventType) ? globalThis.String(object.eventType) : '',
+      eventData: isSet(object.eventData) ? globalThis.String(object.eventData) : '',
+      source: isSet(object.source) ? globalThis.String(object.source) : '',
+      timestamp: isSet(object.timestamp) ? fromJsonTimestamp(object.timestamp) : undefined,
     };
   },
 
   toJSON(message: Event): unknown {
     const obj: any = {};
-    if (message.id !== "") {
+    if (message.id !== '') {
       obj.id = message.id;
     }
-    if (message.eventType !== "") {
+    if (message.eventType !== '') {
       obj.eventType = message.eventType;
     }
-    if (message.eventData !== "") {
+    if (message.eventData !== '') {
       obj.eventData = message.eventData;
     }
-    if (message.source !== "") {
+    if (message.source !== '') {
       obj.source = message.source;
     }
-    if (message.timestamp !== 0) {
-      obj.timestamp = Math.round(message.timestamp);
+    if (message.timestamp !== undefined) {
+      obj.timestamp = message.timestamp.toISOString();
     }
     return obj;
   },
@@ -582,11 +592,11 @@ export const Event: MessageFns<Event> = {
   },
   fromPartial<I extends Exact<DeepPartial<Event>, I>>(object: I): Event {
     const message = createBaseEvent();
-    message.id = object.id ?? "";
-    message.eventType = object.eventType ?? "";
-    message.eventData = object.eventData ?? "";
-    message.source = object.source ?? "";
-    message.timestamp = object.timestamp ?? 0;
+    message.id = object.id ?? '';
+    message.eventType = object.eventType ?? '';
+    message.eventData = object.eventData ?? '';
+    message.source = object.source ?? '';
+    message.timestamp = object.timestamp ?? undefined;
     return message;
   },
 };
@@ -596,7 +606,7 @@ export interface EventsStorage {
   createEvent(request: CreateEventRequest): Promise<CreateEventResponse>;
 }
 
-export const EventsStorageServiceName = "eventsStorage.EventsStorage";
+export const EventsStorageServiceName = 'eventsStorage.EventsStorage';
 export class EventsStorageClientImpl implements EventsStorage {
   private readonly rpc: Rpc;
   private readonly service: string;
@@ -608,13 +618,13 @@ export class EventsStorageClientImpl implements EventsStorage {
   }
   getEvents(request: GetEventsRequest): Promise<GetEventsResponse> {
     const data = GetEventsRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "getEvents", data);
+    const promise = this.rpc.request(this.service, 'getEvents', data);
     return promise.then((data) => GetEventsResponse.decode(new BinaryReader(data)));
   }
 
   createEvent(request: CreateEventRequest): Promise<CreateEventResponse> {
     const data = CreateEventRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "createEvent", data);
+    const promise = this.rpc.request(this.service, 'createEvent', data);
     return promise.then((data) => CreateEventResponse.decode(new BinaryReader(data)));
   }
 }
@@ -625,15 +635,42 @@ interface Rpc {
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends globalThis.Array<infer U>
+    ? globalThis.Array<DeepPartial<U>>
+    : T extends ReadonlyArray<infer U>
+      ? ReadonlyArray<DeepPartial<U>>
+      : T extends {}
+        ? { [K in keyof T]?: DeepPartial<T[K]> }
+        : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
+export type Exact<P, I extends P> = P extends Builtin
+  ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function toTimestamp(date: Date): Timestamp {
+  const seconds = Math.trunc(date.getTime() / 1_000).toString();
+  const nanos = (date.getTime() % 1_000) * 1_000_000;
+  return { seconds, nanos };
+}
+
+function fromTimestamp(t: Timestamp): Date {
+  let millis = (globalThis.Number(t.seconds) || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
+  if (o instanceof globalThis.Date) {
+    return o;
+  } else if (typeof o === 'string') {
+    return new globalThis.Date(o);
+  } else {
+    return fromTimestamp(Timestamp.fromJSON(o));
+  }
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

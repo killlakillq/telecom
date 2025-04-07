@@ -12,17 +12,9 @@ type AmqpChannel = {
   close(): Promise<void>;
 };
 
-interface DatabaseConfig {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-}
-
 interface Event {
   eventType: string;
   eventData: any;
   source: string;
-  timestamp: number;
+  timestamp: string;
 }

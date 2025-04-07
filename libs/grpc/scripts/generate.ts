@@ -1,4 +1,4 @@
-// generate-proto-types.ts
+import logger from '@telecom/logger';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -20,8 +20,8 @@ files.forEach((file) => {
     filePath,
   ].join(' ');
 
-  console.log(`Generating TypeScript from ${file}...`);
+  logger.info(`Generating TypeScript from ${file}...`);
   execSync(cmd, { stdio: 'inherit' });
 });
 
-console.log('✅ TypeScript types generated!');
+logger.info('✅ TypeScript types generated!');
