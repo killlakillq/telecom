@@ -8,7 +8,7 @@ import { AuthToken, Payload } from '@/common/types/payload.interface';
 import { Crypto } from '@/common/utils/crypto';
 import { UserService } from '@/core/user/user.service';
 import config from '@telecom/config';
-import jwt, { sign } from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 
 export class AuthService {
   public constructor(private readonly userService: UserService) {}
@@ -31,7 +31,7 @@ export class AuthService {
       phoneNumber: user.phoneNumber,
     };
 
-    const token = jwt.sign(payload, config.jwt.secret, {
+    const token = sign(payload, config.jwt.secret, {
       expiresIn: config.jwt.expiresIn,
     });
 
